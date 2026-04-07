@@ -206,12 +206,24 @@ uint8_t music_player_init(void)
 {
     uint8_t ret;
 
+    oled_show_string(0, 2, "1:Before SRAM  ");
+    oled_refresh();
+    delay_ms(300);
+
     /* 初始化外部SRAM（内存管理依赖） */
     sram_init();
+
+    oled_show_string(0, 2, "2:After SRAM   ");
+    oled_refresh();
+    delay_ms(300);
 
     /* 初始化内存管理 */
     my_mem_init(SRAMIN);
     my_mem_init(SRAMEX);
+
+    oled_show_string(0, 2, "3:After MemInit");
+    oled_refresh();
+    delay_ms(300);
 
     /* 为 FatFs 申请工作区内存 */
     ret = exfuns_init();
@@ -220,6 +232,10 @@ uint8_t music_player_init(void)
         printf("[MP] exfuns_init failed\r\n");
         return 1;
     }
+
+    oled_show_string(0, 2, "4:After exfuns ");
+    oled_refresh();
+    delay_ms(300);
 
     /* 等待 SD 卡上电稳定，然后重试初始化 */
     {
@@ -275,6 +291,10 @@ uint8_t music_player_init(void)
 
     atk_mo1053_reset();
     atk_mo1053_soft_reset();
+
+    oled_show_string(0, 2, "5:After VS1053 ");
+    oled_refresh();
+    delay_ms(300);
 
     /* 默认音量 200 */
     g_music_player.volume = 200;
