@@ -276,6 +276,10 @@ uint8_t music_player_init(void)
         }
     }
 
+    oled_show_string(0, 2, "6:After mount  ");
+    oled_refresh();
+    delay_ms(300);
+
     printf("[MP] SD card mounted OK\r\n");
 
     /* 初始化 VS1053B */
@@ -289,10 +293,19 @@ uint8_t music_player_init(void)
         return 1;
     }
 
+    oled_show_string(0, 2, "7:After mo1053 ");
+    oled_refresh();
+    delay_ms(300);
+
     atk_mo1053_reset();
+
+    oled_show_string(0, 2, "8:After reset  ");
+    oled_refresh();
+    delay_ms(300);
+
     atk_mo1053_soft_reset();
 
-    oled_show_string(0, 2, "5:After VS1053 ");
+    oled_show_string(0, 2, "9:After sreset ");
     oled_refresh();
     delay_ms(300);
 
