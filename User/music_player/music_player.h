@@ -52,6 +52,25 @@ typedef struct
 extern music_player_t g_music_player;
 
 /******************************************************************************************/
+/* 断点续播数据结构 */
+
+#define BREAKPOINT_MAGIC    0x5AA5A55AUL    /* 有效断点标记 */
+#define BREAKPOINT_EEPROM_ADDR  0           /* 存储在 AT24C02 的起始地址 */
+
+typedef __PACKED_STRUCT
+{
+    uint32_t magic;         /* 魔数 0x5AA5A55A，判断数据是否有效 */
+    uint16_t file_index;    /* 当前歌曲在列表中的索引 */
+    uint32_t byte_offset;   /* 歌曲当前播放进度（4KB块起始字节偏移） */
+    uint8_t  volume;        /* 当前音量 */
+    uint8_t  checksum;      /* 各字节异或校验 */
+} Breakpoint_t;             /* 共 12 字节，2次页写完成，约10ms */
+
+/* 供 PVD 中断处理器访问的播放状态（volatile 保证中断可见性） */
+extern volatile uint32_t g_play_byte_offset;    /* 当前4KB块起始文件位置 */
+extern volatile uint16_t g_play_file_index;     /* 当前歌曲索引 */
+
+/******************************************************************************************/
 /* 接口函数 */
 
 uint8_t music_player_init(void);        /* 初始化播放器（SD卡挂载 + 扫描文件）*/
@@ -62,5 +81,11 @@ uint8_t  music_play_song(const char *pname);    /* 播放一首歌，返回 MP_A
 
 void music_volume_up(void);
 void music_volume_down(void);
+
+void bp_save(void);             /* 将当前状态写入 EEPROM（带日志） */
+void bp_save_isr(void);         /* 将当前状态写入 EEPROM（无日志，ISR专用）*/
+uint8_t bp_load(Breakpoint_t *bp);  /* 读取并校验，0=有效 */
+void bp_invalidate(void);       /* 清除 magic（正常播放结束时调用）*/
+void pvd_init(void);            /* 配置PVD电压检测中断 */
 
 #endif

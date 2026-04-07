@@ -80,7 +80,7 @@ uint8_t atk_mo1053_init(void)
     HAL_GPIO_Init(VS10XX_DQ_GPIO_PORT, &GPIO_Initure);
 
     spi1_init();
-    
+
     return ATK_MO1053_EOK;
 }
 

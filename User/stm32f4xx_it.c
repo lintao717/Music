@@ -22,6 +22,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal.h"
+#include "music_player.h"
+#include "./BSP/ATK_MO1053/atk_mo1053.h"
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
   */
@@ -155,6 +157,22 @@ void SysTick_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
+
+/**
+  * @brief  PVD 掉电保护中断处理函数
+  *         当 VCC 下降至阈値（约2.9V）时触发，立即保存播放断点
+  */
+void PVD_IRQHandler(void)
+{
+    /* 立即停止 VS1053 降低功耗，为 EEPROM 写入争取时间 */
+    VS10XX_XDCS(1);
+    VS10XX_XCS(1);
+
+    /* 将当前播放状态写入 EEPROM（约10ms，无 printf） */
+    bp_save_isr();
+
+    HAL_PWR_PVD_IRQHandler();
+}
 
 
 /**

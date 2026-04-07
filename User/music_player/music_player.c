@@ -17,13 +17,14 @@
 #include "./BSP/SDIO/sdio_sdcard.h"
 #include "./BSP/ATK_MO1053/atk_mo1053.h"
 #include "./BSP/ATK_MO1053/patch_flac.h"
+#include "./BSP/24CXX/24cxx.h"
 #include "./BSP/KEY/key.h"
 #include "./BSP/LED/led.h"
-#include "./BSP/OLED/oled.h"
 #include "./FATFS/exfuns/exfuns.h"
 #include "./MALLOC/malloc.h"
 #include "./SYSTEM/usart/usart.h"
 #include "./SYSTEM/delay/delay.h"
+#include "stm32f4xx_hal.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -32,13 +33,16 @@
 
 music_player_t g_music_player = {0};
 
+volatile uint32_t g_play_byte_offset = 0;   /* 当前4KB块起始文件位置（PVD中断可读） */
+volatile uint16_t g_play_file_index  = 0;   /* 当前歌曲索引（PVD中断可读） */
+
+static uint32_t g_resume_offset = 0;        /* 上次断点位置（仅第一首歌用一次） */
+
 /******************************************************************************************/
 /* 内部函数声明 */
 
-static void mp_oled_show_state(void);
-static void mp_oled_show_filename(const char *name);
-static void mp_oled_show_progress(uint16_t cur_sec, uint16_t total_sec);
 static uint8_t mp_handle_key(void);
+static uint8_t bp_calc_checksum(const Breakpoint_t *bp);
 
 /******************************************************************************************/
 
@@ -98,6 +102,7 @@ uint8_t music_play_song(const char *pname)
     uint16_t i;
     uint8_t  key;
     uint32_t playtime_last = 0;
+    uint32_t chunk_start   = 0;   /* 记录本次 f_read 前的文件指针，即 4KB 块起始位置 */
 
     action = MP_ACTION_NONE;
 
@@ -136,12 +141,22 @@ uint8_t music_play_song(const char *pname)
     g_music_player.file_size = fp->obj.objsize;
     g_music_player.state     = MP_STATE_PLAYING;
 
+    /* 断点续播：跳转到上次保存的 4KB 块起始位置 */
+    if (g_resume_offset > 0)
+    {
+        f_lseek(fp, g_resume_offset);
+        printf("[BP] Seek to offset %lu\r\n", (unsigned long)g_resume_offset);
+        g_resume_offset = 0;
+    }
+
     atk_mo1053_spi_speed_high();
 
     printf("[MP] Playing: %s  (%lu bytes)\r\n", pname, (unsigned long)g_music_player.file_size);
 
     while (1)
     {
+        chunk_start = f_tell(fp);           /* 保存本块起始位置 */
+        g_play_byte_offset = chunk_start;   /* 同步到 volatile 全局变量，PVD 中断可读 */
         res = f_read(fp, buf, MUSIC_READ_BUF_SIZE, &br);
 
         i = 0;
@@ -161,7 +176,7 @@ uint8_t music_play_song(const char *pname)
                     goto play_done;
                 }
 
-                /* 每秒更新一次进度显示 */
+                /* 每秒打印一次进度 */
                 {
                     uint32_t cur = atk_mo1053_get_decode_time();
                     if (cur != playtime_last)
@@ -171,7 +186,6 @@ uint8_t music_play_song(const char *pname)
                         uint16_t bitrate = atk_mo1053_get_bitrate();
                         if (bitrate)
                             total_sec = (uint16_t)((g_music_player.file_size / bitrate) / 125);
-                        mp_oled_show_progress((uint16_t)cur, total_sec);
                         printf("[MP] %02lu:%02lu / %02u:%02u  %ukbps\r\n",
                                cur / 60, cur % 60,
                                total_sec / 60, total_sec % 60,
@@ -206,24 +220,12 @@ uint8_t music_player_init(void)
 {
     uint8_t ret;
 
-    oled_show_string(0, 2, "1:Before SRAM  ");
-    oled_refresh();
-    delay_ms(300);
-
     /* 初始化外部SRAM（内存管理依赖） */
     sram_init();
-
-    oled_show_string(0, 2, "2:After SRAM   ");
-    oled_refresh();
-    delay_ms(300);
 
     /* 初始化内存管理 */
     my_mem_init(SRAMIN);
     my_mem_init(SRAMEX);
-
-    oled_show_string(0, 2, "3:After MemInit");
-    oled_refresh();
-    delay_ms(300);
 
     /* 为 FatFs 申请工作区内存 */
     ret = exfuns_init();
@@ -233,33 +235,21 @@ uint8_t music_player_init(void)
         return 1;
     }
 
-    oled_show_string(0, 2, "4:After exfuns ");
-    oled_refresh();
-    delay_ms(300);
-
     /* 等待 SD 卡上电稳定，然后重试初始化 */
     {
         uint8_t sd_err = 1;
         uint8_t retry;
-        char msg[22];
         for (retry = 0; retry < 5 && sd_err != 0; retry++)
         {
-            snprintf(msg, sizeof(msg), "SD Init %d/5...", retry + 1);
-            oled_show_string(0, 2, msg);
-            oled_refresh();
             delay_ms(500);
             sd_err = sd_init();
             printf("[MP] sd_init() try%d = %d\r\n", retry + 1, sd_err);
         }
         if (sd_err != 0)
         {
-            oled_clear();
-            oled_show_string(0, 0, "SD HW FAIL");
-            oled_refresh();
+            printf("[MP] SD HW FAIL\r\n");
             return 1;
         }
-        oled_show_string(0, 2, "SD OK          ");
-        oled_refresh();
     }
 
     /* 挂载 SD 卡（卷号 0） */
@@ -269,16 +259,9 @@ uint8_t music_player_init(void)
         if (fr != FR_OK)
         {
             printf("[MP] SD card mount failed!\r\n");
-            oled_clear();
-            oled_show_string(0, 0, "SD Mount FAIL");
-            oled_refresh();
             return 1;
         }
     }
-
-    oled_show_string(0, 2, "6:After mount  ");
-    oled_refresh();
-    delay_ms(300);
 
     printf("[MP] SD card mounted OK\r\n");
 
@@ -287,34 +270,21 @@ uint8_t music_player_init(void)
     if (ret)
     {
         printf("[MP] VS1053 init failed!\r\n");
-        oled_clear();
-        oled_show_string(0, 0, "VS1053 FAIL");
-        oled_refresh();
         return 1;
     }
 
-    oled_show_string(0, 2, "7:After mo1053 ");
-    oled_refresh();
-    delay_ms(300);
-
     atk_mo1053_reset();
-
-    oled_show_string(0, 2, "8:After reset  ");
-    oled_refresh();
-    delay_ms(300);
-
     atk_mo1053_soft_reset();
 
-    oled_show_string(0, 2, "9:After sreset ");
-    oled_refresh();
-    delay_ms(300);
-
-    /* 默认音量 200 */
-    g_music_player.volume = 200;
+    /* 默认音量 */
+    g_music_player.volume = MUSIC_VOLUME_DEFAULT;
     atk_mo1053_set_volume(g_music_player.volume);
     atk_mo1053_set_all();
 
     printf("[MP] VS1053 init OK, vol=%d\r\n", g_music_player.volume);
+
+    /* 配置 PVD 掉电保护中断 */
+    pvd_init();
 
     g_music_player.state = MP_STATE_IDLE;
     return 0;
@@ -335,9 +305,6 @@ void music_player_run(void)
     /* 检查 MUSIC 目录 */
     while (f_opendir(&dir, MUSIC_PATH) != FR_OK)
     {
-        oled_clear();
-        oled_show_string(0, 0, "No MUSIC folder");
-        oled_refresh();
         printf("[MP] MUSIC folder not found, retrying...\r\n");
         delay_ms(1000);
     }
@@ -351,9 +318,6 @@ void music_player_run(void)
     if (!finfo || !pname || !offset_tbl)
     {
         printf("[MP] memory alloc failed\r\n");
-        oled_clear();
-        oled_show_string(0, 0, "Mem alloc FAIL");
-        oled_refresh();
         while (1) { LED0_TOGGLE(); delay_ms(200); }
     }
 
@@ -362,9 +326,6 @@ void music_player_run(void)
 
     if (g_music_player.total == 0)
     {
-        oled_clear();
-        oled_show_string(0, 0, "No music files");
-        oled_refresh();
         printf("[MP] No music files in %s\r\n", MUSIC_PATH);
         while (1) { LED0_TOGGLE(); delay_ms(500); }
     }
@@ -372,6 +333,29 @@ void music_player_run(void)
     printf("[MP] Found %d music file(s)\r\n", g_music_player.total);
 
     g_music_player.index = 0;
+
+    /* 断点续播：从 EEPROM 读取并校验断点 */
+    {
+        Breakpoint_t bp;
+        if (bp_load(&bp) == 0
+            && bp.file_index < g_music_player.total
+            && bp.volume >= 100 && bp.volume <= 250)
+        {
+            g_music_player.index  = bp.file_index;
+            g_music_player.volume = bp.volume;
+            atk_mo1053_set_volume(bp.volume);
+            g_resume_offset = bp.byte_offset;
+            printf("[BP] Resume: idx=%d offset=%lu vol=%d\r\n",
+                   bp.file_index,
+                   (unsigned long)bp.byte_offset,
+                   bp.volume);
+            bp_invalidate();
+        }
+        else
+        {
+            printf("[BP] No valid breakpoint, start from beginning\r\n");
+        }
+    }
 
     /* ---- 主播放循环 ---- */
     while (1)
@@ -391,9 +375,9 @@ void music_player_run(void)
         strncpy(g_music_player.file_name, finfo->fname, FF_MAX_LFN);
         snprintf(pname, FF_MAX_LFN + 16, "%s/%s", MUSIC_PATH, finfo->fname);
 
-        /* OLED 显示曲目信息 */
-        mp_oled_show_filename(finfo->fname);
-        mp_oled_show_state();
+        /* 同步歌曲索引到 volatile 变量，供 PVD 中断读取 */
+        g_play_file_index  = g_music_player.index;
+        g_play_byte_offset = 0;
 
         printf("[MP] [%d/%d] %s\r\n",
                g_music_player.index + 1,
@@ -426,45 +410,113 @@ void music_player_run(void)
                     g_music_player.index = 0;
                 break;
         }
+        /* 每首歌播完后更新断点信息（正常挂起保留副本） */
+        bp_save();
 
         delay_ms(100);
     }
 }
 
 /******************************************************************************************/
-/* OLED 显示辅助函数 */
+/* 断点续播功能 */
 
-static void mp_oled_show_filename(const char *name)
+/**
+ * @brief  计算断点数据校验和（各字节异或）
+ */
+static uint8_t bp_calc_checksum(const Breakpoint_t *bp)
 {
-    char buf[22];
-    oled_clear();
-    oled_show_string(0, 0, ">> MP3 Player <<");
-    /* 截断显示，最多21字符 */
-    strncpy(buf, name, 21);
-    buf[21] = '\0';
-    oled_show_string(0, 2, buf);
-    oled_refresh();
+    const uint8_t *p = (const uint8_t *)bp;
+    uint8_t  cs = 0;
+    uint8_t  i;
+    /* 校验 magic(4) + file_index(2) + byte_offset(4) + volume(1) = 11 字节 */
+    for (i = 0; i < (sizeof(Breakpoint_t) - 1); i++)
+    {
+        cs ^= p[i];
+    }
+    return cs;
 }
 
-static void mp_oled_show_state(void)
+/**
+ * @brief  将当前播放状态写入 EEPROM（不使用 printf，适合 PVD 中断上下文）
+ */
+void bp_save_isr(void)
 {
-    char buf[22];
-    snprintf(buf, sizeof(buf), "%d/%d Vol:%d",
-             g_music_player.index + 1,
-             g_music_player.total,
-             g_music_player.volume);
-    oled_show_string(0, 4, buf);
-    oled_refresh();
+    Breakpoint_t bp;
+    bp.magic       = BREAKPOINT_MAGIC;
+    bp.file_index  = g_play_file_index;
+    bp.byte_offset = g_play_byte_offset;
+    bp.volume      = g_music_player.volume;
+    bp.checksum    = bp_calc_checksum(&bp);
+    at24cxx_page_write(BREAKPOINT_EEPROM_ADDR,     (uint8_t *)&bp,      8);
+    at24cxx_page_write(BREAKPOINT_EEPROM_ADDR + 8, (uint8_t *)&bp + 8, (uint8_t)(sizeof(Breakpoint_t) - 8));
 }
 
-static void mp_oled_show_progress(uint16_t cur_sec, uint16_t total_sec)
+/**
+ * @brief  将当前播放状态写入 EEPROM（带日志，常规上下文使用）
+ *   @note  使用2次页写（8+4字节），总耗时约10ms
+ */
+void bp_save(void)
 {
-    char buf[22];
-    snprintf(buf, sizeof(buf), "%02u:%02u / %02u:%02u",
-             cur_sec / 60, cur_sec % 60,
-             total_sec / 60, total_sec % 60);
-    oled_show_string(0, 6, buf);
-    oled_refresh();
+    Breakpoint_t bp;
+    bp.magic       = BREAKPOINT_MAGIC;
+    bp.file_index  = g_play_file_index;
+    bp.byte_offset = g_play_byte_offset;
+    bp.volume      = g_music_player.volume;
+    bp.checksum    = bp_calc_checksum(&bp);
+
+    /* AT24C02 页大小 = 8 字节：先写前8字节，再写后4字节 */
+    at24cxx_page_write(BREAKPOINT_EEPROM_ADDR,     (uint8_t *)&bp,      8);
+    at24cxx_page_write(BREAKPOINT_EEPROM_ADDR + 8, (uint8_t *)&bp + 8, (uint8_t)(sizeof(Breakpoint_t) - 8));
+
+    printf("[BP] Saved: idx=%d offset=%lu vol=%d\r\n",
+           bp.file_index,
+           (unsigned long)bp.byte_offset,
+           bp.volume);
+}
+
+/**
+ * @brief  从 EEPROM 读取并校验断点
+ * @retval 0=有效, 1=无效
+ */
+uint8_t bp_load(Breakpoint_t *bp)
+{
+    at24cxx_read(BREAKPOINT_EEPROM_ADDR, (uint8_t *)bp, sizeof(Breakpoint_t));
+    if (bp->magic != BREAKPOINT_MAGIC)
+    {
+        return 1;
+    }
+    if (bp->checksum != bp_calc_checksum(bp))
+    {
+        printf("[BP] Checksum mismatch\r\n");
+        return 1;
+    }
+    return 0;
+}
+
+/**
+ * @brief  清除 EEPROM 中的断点 magic，防止下次重复续播
+ */
+void bp_invalidate(void)
+{
+    uint32_t zero = 0;
+    at24cxx_write(BREAKPOINT_EEPROM_ADDR, (uint8_t *)&zero, 4);
+    printf("[BP] Breakpoint invalidated\r\n");
+}
+
+/**
+ * @brief  配置 PVD（可编程电压检测器），阈値约2.9V
+ */
+void pvd_init(void)
+{
+    PWR_PVDTypeDef pvd_cfg = {0};
+    __HAL_RCC_PWR_CLK_ENABLE();
+    pvd_cfg.PVDLevel = PWR_PVDLEVEL_6;            /* 阈値约2.9V */
+    pvd_cfg.Mode    = PWR_PVD_MODE_IT_RISING;     /* 上升沿（电压下降至阈値时触发） */
+    HAL_PWR_ConfigPVD(&pvd_cfg);
+    HAL_NVIC_SetPriority(PVD_IRQn, 0, 0);        /* 最高优先级 */
+    HAL_NVIC_EnableIRQ(PVD_IRQn);
+    HAL_PWR_EnablePVD();
+    printf("[PVD] Configured at ~2.9V\r\n");
 }
 
 /**

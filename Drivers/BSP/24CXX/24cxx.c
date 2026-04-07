@@ -153,6 +153,42 @@ void at24cxx_write(uint16_t addr, uint8_t *pbuf, uint16_t datalen)
     }
 }
 
+/**
+ * @brief       页写：在一次 I2C 事务中连续写入最多 8 字节（AT24C02 页大小）
+ *   @note      写入完成后等待 5ms 让 EEPROM 完成内部编程，比逐字节写快得多。
+ *              调用者须保证：addr ~ addr+len-1 在同一页（8字节对齐的块）内，
+ *              且 len <= 8。
+ * @param       addr : 起始写入地址（0~255 for AT24C02）
+ * @param       pbuf : 数据指针
+ * @param       len  : 写入字节数（1~8）
+ * @retval      无
+ */
+void at24cxx_page_write(uint16_t addr, uint8_t *pbuf, uint8_t len)
+{
+    uint8_t i;
+    iic_start();
+    if (EE_TYPE > AT24C16)
+    {
+        iic_send_byte(0xA0);
+        iic_wait_ack();
+        iic_send_byte(addr >> 8);
+    }
+    else
+    {
+        iic_send_byte(0xA0 + ((addr >> 8) << 1));
+    }
+    iic_wait_ack();
+    iic_send_byte(addr % 256);
+    iic_wait_ack();
+    for (i = 0; i < len; i++)
+    {
+        iic_send_byte(*pbuf++);
+        iic_wait_ack();
+    }
+    iic_stop();
+    delay_ms(5);
+}
+
 
 
 

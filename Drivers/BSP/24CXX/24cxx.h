@@ -24,6 +24,7 @@ uint8_t at24cxx_read_one_byte(uint16_t addr);                       /* Ö¸¶¨µØÖ·¶
 void at24cxx_write_one_byte(uint16_t addr,uint8_t data);            /* Ö¸¶¨µØÖ·Ğ´ÈëÒ»¸ö×Ö½Ú */
 void at24cxx_write(uint16_t addr, uint8_t *pbuf, uint16_t datalen); /* ´ÓÖ¸¶¨µØÖ·¿ªÊ¼Ğ´ÈëÖ¸¶¨³¤¶ÈµÄÊı¾İ */
 void at24cxx_read(uint16_t addr, uint8_t *pbuf, uint16_t datalen);  /* ´ÓÖ¸¶¨µØÖ·¿ªÊ¼¶Á³öÖ¸¶¨³¤¶ÈµÄÊı¾İ */
+void at24cxx_page_write(uint16_t addr, uint8_t *pbuf, uint8_t len); /* Ò³Ğ´£¨×î¶à8×Ö½Ú£©£¬Ò»´ÎI2CÊÂÎñ */
 
 #endif
 
