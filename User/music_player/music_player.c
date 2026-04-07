@@ -221,10 +221,16 @@ uint8_t music_player_init(void)
         return 1;
     }
 
-    /* 先直接初始化 SD 卡硬件，打印具体错误码 */
+    /* 等待 SD 卡上电稳定，然后重试初始化 */
     {
-        uint8_t sd_err = sd_init();
-        printf("[MP] sd_init() = %d\r\n", sd_err);
+        uint8_t sd_err = 1;
+        uint8_t retry;
+        for (retry = 0; retry < 5 && sd_err != 0; retry++)
+        {
+            delay_ms(500);
+            sd_err = sd_init();
+            printf("[MP] sd_init() try%d = %d\r\n", retry + 1, sd_err);
+        }
         if (sd_err != 0)
         {
             oled_clear();
