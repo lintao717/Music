@@ -210,7 +210,7 @@ I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd.h)(0x64893BAD)
 I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_ll_usb.h)(0x64893BAD)
 I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd_ex.h)(0x64893BAD)
 I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_hcd.h)(0x64893BAD)
-F (..\..\User\music_player\music_player.c)(0x69D4C5A0)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections -I ..\..\User -I ..\..\User\music_player -I ..\..\Drivers -I ..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include -I ..\..\Drivers\CMSIS\Include -I ..\..\Drivers\STM32F4xx_HAL_Driver\Inc -I ..\..\Middlewares-ID:\keil5\MDK\ARM\Pack\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="543" -DSTM32F407xx -DUSE_HAL_DRIVER -DSTM32F407xx-o ..\..\output\music_player.o --omf_browse ..\..\output\music_player.crf --depend ..\..\output\music_player.d)
+F (..\..\User\music_player\music_player.c)(0x69D4EDC6)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections -I ..\..\User -I ..\..\User\music_player -I ..\..\Drivers -I ..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include -I ..\..\Drivers\CMSIS\Include -I ..\..\Drivers\STM32F4xx_HAL_Driver\Inc -I ..\..\Middlewares-ID:\keil5\MDK\ARM\Pack\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="543" -DSTM32F407xx -DUSE_HAL_DRIVER -DSTM32F407xx-o ..\..\output\music_player.o --omf_browse ..\..\output\music_player.crf --depend ..\..\output\music_player.d)
 I (..\..\User\music_player\music_player.h)(0x69D4B8AD)
 I (..\..\Drivers\./SYSTEM/sys/sys.h)(0x64893BAD)
 I (..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x64893BAD)
@@ -281,6 +281,7 @@ I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_hcd.h)(0x64893BAD)
 I (..\..\Middlewares\./FATFS/source/ff.h)(0x64893BAD)
 I (..\..\Middlewares\./FATFS/source/ffconf.h)(0x69D4C546)
 I (..\..\Drivers\./BSP/SRAM/sram.h)(0x69BFD7D6)
+I (..\..\Drivers\./BSP/SDIO/sdio_sdcard.h)(0x69BFD7D6)
 I (..\..\Drivers\./BSP/ATK_MO1053/atk_mo1053.h)(0x69BFD7D6)
 I (..\..\Drivers\./BSP/ATK_MO1053/patch_flac.h)(0x64893BAD)
 I (..\..\Drivers\./BSP/KEY/key.h)(0x69BFD7D6)
@@ -2378,7 +2379,7 @@ I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd_ex.h)(0x64893BAD)
 I (..\..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_hcd.h)(0x64893BAD)
 I (..\..\Drivers\./SYSTEM/usart/usart.h)(0x69C4F27C)
 I (D:\keil5\MDK\ARM\ARMCC\include\stdio.h)(0x569DEA3A)
-F (..\..\Drivers\BSP\OLED\oled.c)(0x69BFD4C1)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections -I ..\..\User -I ..\..\User\music_player -I ..\..\Drivers -I ..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include -I ..\..\Drivers\CMSIS\Include -I ..\..\Drivers\STM32F4xx_HAL_Driver\Inc -I ..\..\Middlewares-ID:\keil5\MDK\ARM\Pack\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="543" -DSTM32F407xx -DUSE_HAL_DRIVER -DSTM32F407xx-o ..\..\output\oled.o --omf_browse ..\..\output\oled.crf --depend ..\..\output\oled.d)
+F (..\..\Drivers\BSP\OLED\oled.c)(0x69D4EE76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O0 --apcs=interwork --split_sections -I ..\..\User -I ..\..\User\music_player -I ..\..\Drivers -I ..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include -I ..\..\Drivers\CMSIS\Include -I ..\..\Drivers\STM32F4xx_HAL_Driver\Inc -I ..\..\Middlewares-ID:\keil5\MDK\ARM\Pack\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="543" -DSTM32F407xx -DUSE_HAL_DRIVER -DSTM32F407xx-o ..\..\output\oled.o --omf_browse ..\..\output\oled.crf --depend ..\..\output\oled.d)
 I (..\..\Drivers\./BSP/OLED/oled.h)(0x69B40CAA)
 I (..\..\Drivers\./SYSTEM/sys/sys.h)(0x64893BAD)
 I (..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x64893BAD)

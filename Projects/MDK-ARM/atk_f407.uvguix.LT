@@ -93,18 +93,18 @@
       <flags>2</flags>
       <showCmd>3</showCmd>
       <MinPosition>
-        <xPos>-1</xPos>
-        <yPos>-1</yPos>
+        <xPos>-32000</xPos>
+        <yPos>-32000</yPos>
       </MinPosition>
       <MaxPosition>
         <xPos>-1</xPos>
         <yPos>-1</yPos>
       </MaxPosition>
       <NormalPosition>
-        <Top>43</Top>
-        <Left>-50</Left>
-        <Right>1441</Right>
-        <Bottom>927</Bottom>
+        <Top>8</Top>
+        <Left>-7</Left>
+        <Right>1484</Right>
+        <Bottom>892</Bottom>
       </NormalPosition>
     </WindowPosition>
     <MDIClientArea>
@@ -1865,9 +1865,9 @@
       <ActiveTab>0</ActiveTab>
       <Doc>
         <Name>..\..\User\music_player\music_player.c</Name>
-        <ColumnNumber>12</ColumnNumber>
-        <TopLine>355</TopLine>
-        <CurrentLine>379</CurrentLine>
+        <ColumnNumber>22</ColumnNumber>
+        <TopLine>163</TopLine>
+        <CurrentLine>388</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>

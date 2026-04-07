@@ -71,6 +71,7 @@
 ..\..\output\music_player.o: ..\..\Middlewares\./FATFS/source/ff.h
 ..\..\output\music_player.o: ..\..\Middlewares\./FATFS/source/ffconf.h
 ..\..\output\music_player.o: ..\..\Drivers\./BSP/SRAM/sram.h
+..\..\output\music_player.o: ..\..\Drivers\./BSP/SDIO/sdio_sdcard.h
 ..\..\output\music_player.o: ..\..\Drivers\./BSP/ATK_MO1053/atk_mo1053.h
 ..\..\output\music_player.o: ..\..\Drivers\./BSP/ATK_MO1053/patch_flac.h
 ..\..\output\music_player.o: ..\..\Drivers\./BSP/KEY/key.h

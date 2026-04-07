@@ -3,7 +3,7 @@
 <title>Static Call Graph - [..\..\Output\atk_f407.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image ..\..\Output\atk_f407.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Tue Apr 07 16:52:03 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Tue Apr 07 19:48:20 2026
 <BR><P>
 <H3>Maximum Stack Usage =       1000 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1838,6 +1838,7 @@ Global Symbols
 <LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atk_mo1053_reset
 <LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_init
 <LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;music_player_run
+<LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;music_player_init
 <LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> usmart_config.o(.data)
@@ -1870,8 +1871,8 @@ Global Symbols
 <P><STRONG><a name="[15a]"></a>disk_initialize</STRONG> (Thumb, 44 bytes, Stack size 16 bytes, diskio.o(i.disk_initialize))
 <BR><BR>[Stack]<UL><LI>Max Depth = 236<LI>Call Chain = disk_initialize &rArr; sd_init &rArr; HAL_SD_ConfigWideBusOperation &rArr; SD_WideBus_Enable &rArr; SD_FindSCR &rArr; SDMMC_CmdBlockLength &rArr; SDMMC_GetCmdResp1
 </UL>
-<BR>[Calls]<UL><LI><a href="#[15c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;norflash_init
-<LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
+<BR>[Calls]<UL><LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
+<LI><a href="#[15c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;norflash_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mount_volume
 </UL>
@@ -1887,9 +1888,9 @@ Global Symbols
 <P><STRONG><a name="[15f]"></a>disk_read</STRONG> (Thumb, 126 bytes, Stack size 24 bytes, diskio.o(i.disk_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 244<LI>Call Chain = disk_read &rArr; sd_init &rArr; HAL_SD_ConfigWideBusOperation &rArr; SD_WideBus_Enable &rArr; SD_FindSCR &rArr; SDMMC_CmdBlockLength &rArr; SDMMC_GetCmdResp1
 </UL>
-<BR>[Calls]<UL><LI><a href="#[161]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;norflash_read
+<BR>[Calls]<UL><LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
+<LI><a href="#[161]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;norflash_read
 <LI><a href="#[160]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_read_disk
-<LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_read
 <LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_open
@@ -1904,9 +1905,9 @@ Global Symbols
 <P><STRONG><a name="[14b]"></a>disk_write</STRONG> (Thumb, 126 bytes, Stack size 24 bytes, diskio.o(i.disk_write))
 <BR><BR>[Stack]<UL><LI>Max Depth = 272<LI>Call Chain = disk_write &rArr; norflash_write &rArr; norflash_write_nocheck &rArr; norflash_write_page &rArr; norflash_wait_busy &rArr; norflash_read_sr &rArr; spi1_read_write_byte &rArr; HAL_SPI_TransmitReceive &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFlagStateUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;norflash_write
+<BR>[Calls]<UL><LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
+<LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;norflash_write
 <LI><a href="#[162]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_write_disk
-<LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_read
 <LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_sync
@@ -1922,8 +1923,8 @@ Global Symbols
 <P><STRONG><a name="[164]"></a>exfuns_file_type</STRONG> (Thumb, 186 bytes, Stack size 32 bytes, exfuns.o(i.exfuns_file_type))
 <BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = exfuns_file_type &rArr; strcpy
 </UL>
-<BR>[Calls]<UL><LI><a href="#[165]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
-<LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
+<BR>[Calls]<UL><LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
+<LI><a href="#[165]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[166]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exfuns_char_upper
 </UL>
 <BR>[Called By]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;music_scan_files
@@ -2209,11 +2210,12 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;music_player_run
 </UL>
 
-<P><STRONG><a name="[190]"></a>music_player_init</STRONG> (Thumb, 164 bytes, Stack size 8 bytes, music_player.o(i.music_player_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 504 + Unknown Stack Size
+<P><STRONG><a name="[190]"></a>music_player_init</STRONG> (Thumb, 240 bytes, Stack size 16 bytes, music_player.o(i.music_player_init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 512 + Unknown Stack Size
 <LI>Call Chain = music_player_init &rArr; f_mount &rArr; mount_volume &rArr; find_volume &rArr; check_fs &rArr; move_window &rArr; sync_window &rArr; disk_write &rArr; norflash_write &rArr; norflash_write_nocheck &rArr; norflash_write_page &rArr; norflash_wait_busy &rArr; norflash_read_sr &rArr; spi1_read_write_byte &rArr; HAL_SPI_TransmitReceive &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFlagStateUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sram_init
+<LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sd_init
 <LI><a href="#[198]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_clear
 <LI><a href="#[8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;my_mem_init
 <LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_mount
@@ -2225,6 +2227,7 @@ Global Symbols
 <LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atk_mo1053_init
 <LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_show_string
 <LI><a href="#[18f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_refresh
+<LI><a href="#[c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_ms
 <LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -2460,12 +2463,14 @@ Global Symbols
 <LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[1ae]"></a>oled_show_char</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, oled.o(i.oled_show_char))
-<BR><BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_show_string
+<P><STRONG><a name="[1ae]"></a>oled_show_char</STRONG> (Thumb, 118 bytes, Stack size 24 bytes, oled.o(i.oled_show_char))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = oled_show_char
+</UL>
+<BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_show_string
 </UL>
 
-<P><STRONG><a name="[18e]"></a>oled_show_string</STRONG> (Thumb, 54 bytes, Stack size 12 bytes, oled.o(i.oled_show_string))
-<BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = oled_show_string
+<P><STRONG><a name="[18e]"></a>oled_show_string</STRONG> (Thumb, 54 bytes, Stack size 16 bytes, oled.o(i.oled_show_string))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = oled_show_string &rArr; oled_show_char
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;oled_show_char
 </UL>
@@ -2487,7 +2492,8 @@ Global Symbols
 <LI><a href="#[1af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SD_GetCardInfo
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SD_ConfigWideBusOperation
 </UL>
-<BR>[Called By]<UL><LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;disk_write
+<BR>[Called By]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;music_player_init
+<LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;disk_write
 <LI><a href="#[15f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;disk_read
 <LI><a href="#[15a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;disk_initialize
 </UL>
