@@ -225,8 +225,12 @@ uint8_t music_player_init(void)
     {
         uint8_t sd_err = 1;
         uint8_t retry;
+        char msg[22];
         for (retry = 0; retry < 5 && sd_err != 0; retry++)
         {
+            snprintf(msg, sizeof(msg), "SD Init %d/5...", retry + 1);
+            oled_show_string(0, 2, msg);
+            oled_refresh();
             delay_ms(500);
             sd_err = sd_init();
             printf("[MP] sd_init() try%d = %d\r\n", retry + 1, sd_err);
@@ -238,6 +242,8 @@ uint8_t music_player_init(void)
             oled_refresh();
             return 1;
         }
+        oled_show_string(0, 2, "SD OK          ");
+        oled_refresh();
     }
 
     /* 挂载 SD 卡（卷号 0） */
