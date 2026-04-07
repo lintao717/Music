@@ -4,7 +4,7 @@
 #include "./BSP/LED/led.h"
 #include "./BSP/KEY/key.h"
 #include "./BSP/OLED/oled.h"
-#include "demo.h"
+#include "music_player.h"
 
 
 int main(void)
@@ -16,8 +16,25 @@ int main(void)
     led_init();                                 /* 初始化LED */
     key_init();                                 /* 初始化按键 */
     oled_init();                                /* 初始化OLED */
-    oled_show_string(0, 0, "OLED OK");
+    oled_show_string(0, 0, "MP3 Player Init");
     oled_refresh();
-    hardware_test_run();                                 /* 运行示例程序 */
+
+    printf("\r\n========== MP3 Player ==========\r\n");
+
+    /* 初始化播放器（内存 + FatFs挂载 + VS1053初始化） */
+    if (music_player_init() != 0)
+    {
+        printf("music_player_init FAILED\r\n");
+        oled_show_string(0, 2, "Init FAILED");
+        oled_refresh();
+        while (1) { LED0_TOGGLE(); delay_ms(500); }
+    }
+
+    printf("Init OK. Starting playback...\r\n");
+    oled_show_string(0, 2, "Scanning...");
+    oled_refresh();
+
+    /* 进入播放主循环（不返回） */
+    music_player_run();
 }
 

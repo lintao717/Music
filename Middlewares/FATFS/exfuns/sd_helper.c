@@ -15,7 +15,6 @@
 /* 写缓冲区 */
 static uint8_t *g_write_buffer = NULL;
 static UINT g_buffer_index = 0;
-static FIL *g_current_file = NULL;
 
 /**
  * @brief       预分配文件空间（使用f_expand）
@@ -57,7 +56,7 @@ FRESULT sd_buffered_write_init(FIL *fp)
     }
     
     g_buffer_index = 0;
-    g_current_file = fp;
+    (void)fp;
     
     return FR_OK;
 }
@@ -139,5 +138,4 @@ void sd_buffered_write_deinit(void)
         g_write_buffer = NULL;
     }
     g_buffer_index = 0;
-    g_current_file = NULL;
 }

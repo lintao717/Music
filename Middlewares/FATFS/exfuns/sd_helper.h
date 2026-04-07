@@ -11,7 +11,7 @@
 #ifndef __SD_HELPER_H
 #define __SD_HELPER_H
 
-#include "ff.h"
+#include "./FATFS/source/ff.h"	
 
 /* 写缓冲区大小 */
 #define SD_WRITE_BUFFER_SIZE    4096

@@ -69,3 +69,4 @@
 ..\..\output\usart.o: ..\..\Drivers\CMSIS\Include\core_cm4.h
 ..\..\output\usart.o: ..\..\Drivers\./SYSTEM/usart/usart.h
 ..\..\output\usart.o: D:\keil5\MDK\ARM\ARMCC\Bin\..\include\stdio.h
+..\..\output\usart.o: ..\..\Drivers\./SYSTEM/uart_esp32/uart_esp32.h

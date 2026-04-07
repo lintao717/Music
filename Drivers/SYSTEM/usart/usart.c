@@ -1,5 +1,6 @@
 #include "./SYSTEM/sys/sys.h"
 #include "./SYSTEM/usart/usart.h"
+#include "./SYSTEM/uart_esp32/uart_esp32.h"
 
 
 /* 如果使用os,则包括下面的头文件即可 */
@@ -110,9 +111,10 @@ void usart_init(uint32_t baudrate)
 void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
     GPIO_InitTypeDef gpio_init_struct;
-    if(huart->Instance == USART_UX)                             /* 如果是串口1，进行串口1 MSP初始化 */
+
+    if (huart->Instance == USART_UX)                            /* USART2: 调试串口 (PA2/PA3) */
     {
-        USART_UX_CLK_ENABLE();                                  /* USART1 时钟使能 */
+        USART_UX_CLK_ENABLE();                                  /* USART2 时钟使能 */
         USART_TX_GPIO_CLK_ENABLE();                             /* 发送引脚时钟使能 */
         USART_RX_GPIO_CLK_ENABLE();                             /* 接收引脚时钟使能 */
 
@@ -120,17 +122,73 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
         gpio_init_struct.Mode = GPIO_MODE_AF_PP;                /* 复用推挽输出 */
         gpio_init_struct.Pull = GPIO_PULLUP;                    /* 上拉 */
         gpio_init_struct.Speed = GPIO_SPEED_FREQ_HIGH;          /* 高速 */
-        gpio_init_struct.Alternate = USART_TX_GPIO_AF;          /* 复用为USART1 */
+        gpio_init_struct.Alternate = USART_TX_GPIO_AF;          /* 复用为USART2 */
         HAL_GPIO_Init(USART_TX_GPIO_PORT, &gpio_init_struct);   /* 初始化发送引脚 */
 
         gpio_init_struct.Pin = USART_RX_GPIO_PIN;               /* RX引脚 */
-        gpio_init_struct.Alternate = USART_RX_GPIO_AF;          /* 复用为USART1 */
+        gpio_init_struct.Alternate = USART_RX_GPIO_AF;          /* 复用为USART2 */
         HAL_GPIO_Init(USART_RX_GPIO_PORT, &gpio_init_struct);   /* 初始化接收引脚 */
 
 #if USART_EN_RX
-        HAL_NVIC_EnableIRQ(USART_UX_IRQn);                      /* 使能USART1中断通道 */
+        HAL_NVIC_EnableIRQ(USART_UX_IRQn);                      /* 使能USART2中断通道 */
         HAL_NVIC_SetPriority(USART_UX_IRQn, 3, 3);              /* 抢占优先级3，子优先级3 */
 #endif
+    }
+    else if (huart->Instance == ESP32_UART)                     /* USART1: ESP32通信串口 (PA9/PA10) + DMA */
+    {
+        ESP32_UART_CLK_ENABLE();                                /* USART1 时钟使能 */
+        ESP32_UART_TX_GPIO_CLK_ENABLE();                        /* TX引脚时钟使能 */
+        ESP32_UART_RX_GPIO_CLK_ENABLE();                        /* RX引脚时钟使能 */
+        ESP32_UART_DMA_CLK_ENABLE();                            /* DMA2 时钟使能 */
+
+        gpio_init_struct.Pin = ESP32_UART_TX_GPIO_PIN;          /* TX引脚 PA9 */
+        gpio_init_struct.Mode = GPIO_MODE_AF_PP;
+        gpio_init_struct.Pull = GPIO_PULLUP;
+        gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        gpio_init_struct.Alternate = ESP32_UART_TX_GPIO_AF;
+        HAL_GPIO_Init(ESP32_UART_TX_GPIO_PORT, &gpio_init_struct);
+
+        gpio_init_struct.Pin = ESP32_UART_RX_GPIO_PIN;          /* RX引脚 PA10 */
+        gpio_init_struct.Alternate = ESP32_UART_RX_GPIO_AF;
+        HAL_GPIO_Init(ESP32_UART_RX_GPIO_PORT, &gpio_init_struct);
+
+        /* DMA RX: DMA2_Stream5_Channel4 */
+        g_dma_esp32_rx_handle.Instance = ESP32_UART_DMA_RX_STREAM;
+        g_dma_esp32_rx_handle.Init.Channel = ESP32_UART_DMA_RX_CHANNEL;
+        g_dma_esp32_rx_handle.Init.Direction = DMA_PERIPH_TO_MEMORY;
+        g_dma_esp32_rx_handle.Init.PeriphInc = DMA_PINC_DISABLE;
+        g_dma_esp32_rx_handle.Init.MemInc = DMA_MINC_ENABLE;
+        g_dma_esp32_rx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        g_dma_esp32_rx_handle.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        g_dma_esp32_rx_handle.Init.Mode = DMA_NORMAL;
+        g_dma_esp32_rx_handle.Init.Priority = DMA_PRIORITY_HIGH;
+        g_dma_esp32_rx_handle.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+        HAL_DMA_Init(&g_dma_esp32_rx_handle);
+        __HAL_LINKDMA(huart, hdmarx, g_dma_esp32_rx_handle);
+
+        /* DMA TX: DMA2_Stream7_Channel4 */
+        g_dma_esp32_tx_handle.Instance = ESP32_UART_DMA_TX_STREAM;
+        g_dma_esp32_tx_handle.Init.Channel = ESP32_UART_DMA_TX_CHANNEL;
+        g_dma_esp32_tx_handle.Init.Direction = DMA_MEMORY_TO_PERIPH;
+        g_dma_esp32_tx_handle.Init.PeriphInc = DMA_PINC_DISABLE;
+        g_dma_esp32_tx_handle.Init.MemInc = DMA_MINC_ENABLE;
+        g_dma_esp32_tx_handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        g_dma_esp32_tx_handle.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        g_dma_esp32_tx_handle.Init.Mode = DMA_NORMAL;
+        g_dma_esp32_tx_handle.Init.Priority = DMA_PRIORITY_MEDIUM;
+        g_dma_esp32_tx_handle.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+        HAL_DMA_Init(&g_dma_esp32_tx_handle);
+        __HAL_LINKDMA(huart, hdmatx, g_dma_esp32_tx_handle);
+
+        /* NVIC */
+        HAL_NVIC_SetPriority(ESP32_UART_IRQn, 2, 0);
+        HAL_NVIC_EnableIRQ(ESP32_UART_IRQn);
+
+        HAL_NVIC_SetPriority(DMA2_Stream5_IRQn, 2, 1);
+        HAL_NVIC_EnableIRQ(DMA2_Stream5_IRQn);
+
+        HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 2, 2);
+        HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
     }
 }
 

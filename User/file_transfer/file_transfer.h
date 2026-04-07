@@ -12,7 +12,7 @@
 #define __FILE_TRANSFER_H
 
 #include "./SYSTEM/sys/sys.h"
-#include "ff.h"
+#include "./FATFS/source/ff.h"	
 
 /* 传输状态 */
 typedef enum {

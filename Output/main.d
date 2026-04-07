@@ -73,4 +73,6 @@
 ..\..\output\main.o: ..\..\Drivers\./BSP/LED/led.h
 ..\..\output\main.o: ..\..\Drivers\./BSP/KEY/key.h
 ..\..\output\main.o: ..\..\Drivers\./BSP/OLED/oled.h
-..\..\output\main.o: ..\..\User\demo.h
+..\..\output\main.o: ..\..\User\music_player\music_player.h
+..\..\output\main.o: ..\..\Middlewares\./FATFS/source/ff.h
+..\..\output\main.o: ..\..\Middlewares\./FATFS/source/ffconf.h

@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\User;..\..\Drivers;..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include;..\..\Drivers\CMSIS\Include;..\..\Drivers\STM32F4xx_HAL_Driver\Inc;..\..\Middlewares</IncludePath>
+              <IncludePath>..\..\User;..\..\User\music_player;..\..\Drivers;..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Include;..\..\Drivers\CMSIS\Include;..\..\Drivers\STM32F4xx_HAL_Driver\Inc;..\..\Middlewares</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -410,9 +410,9 @@
               <FilePath>..\..\Drivers\CMSIS\Device\ST\STM32F4xx\Source\Templates\system_stm32f4xx.c</FilePath>
             </File>
             <File>
-              <FileName>demo.c</FileName>
+              <FileName>music_player.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\demo.c</FilePath>
+              <FilePath>..\..\User\music_player\music_player.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -433,6 +433,11 @@
               <FileName>usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Drivers\SYSTEM\usart\usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_esp32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\SYSTEM\uart_esp32\uart_esp32.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -597,6 +602,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Middlewares/YMODEM</GroupName>
+          <Files>
+            <File>
+              <FileName>ymodem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Middlewares\YMODEM\ymodem.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Middlewares/FATFS</GroupName>
           <Files>
             <File>
@@ -628,6 +643,11 @@
               <FileName>ffsystem.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Middlewares\FATFS\source\ffsystem.c</FilePath>
+            </File>
+            <File>
+              <FileName>sd_helper.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Middlewares\FATFS\exfuns\sd_helper.c</FilePath>
             </File>
           </Files>
         </Group>
