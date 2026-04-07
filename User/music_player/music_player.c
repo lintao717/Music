@@ -14,6 +14,7 @@
 
 #include "music_player.h"
 #include "./BSP/SRAM/sram.h"
+#include "./BSP/SDIO/sdio_sdcard.h"
 #include "./BSP/ATK_MO1053/atk_mo1053.h"
 #include "./BSP/ATK_MO1053/patch_flac.h"
 #include "./BSP/KEY/key.h"
@@ -220,14 +221,31 @@ uint8_t music_player_init(void)
         return 1;
     }
 
-    /* 挂载 SD 卡（卷号 0） */
-    if (f_mount(fs[0], "0:", 1) != FR_OK)
+    /* 先直接初始化 SD 卡硬件，打印具体错误码 */
     {
-        printf("[MP] SD card mount failed!\r\n");
-        oled_clear();
-        oled_show_string(0, 0, "SD Mount FAIL");
-        oled_refresh();
-        return 1;
+        uint8_t sd_err = sd_init();
+        printf("[MP] sd_init() = %d\r\n", sd_err);
+        if (sd_err != 0)
+        {
+            oled_clear();
+            oled_show_string(0, 0, "SD HW FAIL");
+            oled_refresh();
+            return 1;
+        }
+    }
+
+    /* 挂载 SD 卡（卷号 0） */
+    {
+        FRESULT fr = f_mount(fs[0], "0:", 1);
+        printf("[MP] f_mount() = %d\r\n", fr);
+        if (fr != FR_OK)
+        {
+            printf("[MP] SD card mount failed!\r\n");
+            oled_clear();
+            oled_show_string(0, 0, "SD Mount FAIL");
+            oled_refresh();
+            return 1;
+        }
     }
 
     printf("[MP] SD card mounted OK\r\n");
