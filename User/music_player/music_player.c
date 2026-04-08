@@ -179,6 +179,11 @@ uint8_t music_play_song(const char *pname)
             {
                 i += 32;
             }
+            else if (i == 0)
+            {
+                /* DREQ 从未变低：加 1ms 限速，防止歌曲被秒速耗尽 */
+                delay_ms(1);
+            }
             else
             {
                 /* VS1053 数据缓冲区暂满（DREQ=LOW） */
@@ -436,6 +441,13 @@ void music_player_run(void)
         }
         /* 每首歌播完后更新断点信息（正常挂起保留副本） */
         bp_save();
+
+        /* 等待所有按键松开，确保下一首歌能正确识别新的按键 */
+        while (KEY0 == 1 || KEY1 == 1 || KEY2 == 1)
+        {
+            delay_ms(10);
+        }
+        key_scan(0);    /* 清除 key_up 状态，为下一首歌做准备 */
 
         delay_ms(100);
     }
