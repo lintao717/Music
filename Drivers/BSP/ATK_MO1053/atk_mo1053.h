@@ -20,7 +20,7 @@
 #define VS10XX_XDCS_GPIO_CLK_ENABLE()   do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)   /* PF口时钟使能 */
 
 #define VS10XX_DQ_GPIO_PORT             GPIOF
-#define VS10XX_DQ_GPIO_PIN              GPIO_PIN_6
+#define VS10XX_DQ_GPIO_PIN              GPIO_PIN_11
 #define VS10XX_DQ_GPIO_CLK_ENABLE()     do{ __HAL_RCC_GPIOF_CLK_ENABLE(); }while(0)   /* PC口时钟使能 */
 
 /******************************************************************************************/
