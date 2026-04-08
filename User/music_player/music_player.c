@@ -179,11 +179,6 @@ uint8_t music_play_song(const char *pname)
             {
                 i += 32;
             }
-            else if (i == 0)
-            {
-                /* DREQ 从未变低：加 1ms 限速，防止歌曲被秒速耗尽 */
-                delay_ms(1);
-            }
             else
             {
                 /* VS1053 数据缓冲区暂满（DREQ=LOW） */
@@ -298,10 +293,13 @@ uint8_t music_player_init(void)
         return 1;
     }
 
-    atk_mo1053_reset();
-    delay_ms(50);   /* 给 VS1053 额外时间确保dreq */
-    printf("[MP] VS1053 DQ after reset = %d\r\n", (int)VS10XX_DQ);
-    atk_mo1053_soft_reset();
+    {
+        uint8_t rst_ret = atk_mo1053_reset();
+        delay_ms(50);
+        printf("[MP] reset()=%d  DQ=%d\r\n", (int)rst_ret, (int)VS10XX_DQ);
+        atk_mo1053_soft_reset();
+        printf("[MP] SPI_MODE=0x%04X\r\n", atk_mo1053_read_reg(SPI_MODE));
+    }
 
     /* 默认音量 */
     g_music_player.volume = MUSIC_VOLUME_DEFAULT;
