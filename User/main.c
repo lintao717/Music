@@ -4,6 +4,7 @@
 #include "./BSP/LED/led.h"
 #include "./BSP/KEY/key.h"
 #include "./BSP/24CXX/24cxx.h"
+#include "./BSP/OLED/oled.h"
 #include "music_player.h"
 
 
@@ -15,7 +16,10 @@ int main(void)
     usart_init(115200);                         /* 串口初始化为115200 */
     led_init();                                 /* 初始化LED */
     key_init();                                 /* 初始化按键 */
-    at24cxx_init();                             /* 初始化EEPROM(AT24C02) */
+    at24cxx_init();                             /* 初始化EEPROM(AT24C02)，同时配置软件I2C */
+    oled_init();                                /* 初始化OLED，共用AT24C02的软件I2C总线 */
+    oled_show_string(0, 0, "MP3 Player Init");
+    oled_refresh();
 
     printf("\r\n========== MP3 Player ==========\r\n");
 
@@ -23,10 +27,14 @@ int main(void)
     if (music_player_init() != 0)
     {
         printf("music_player_init FAILED\r\n");
+        oled_show_string(0, 2, "Init FAILED");
+        oled_refresh();
         while (1) { LED0_TOGGLE(); delay_ms(500); }
     }
 
     printf("Init OK. Starting playback...\r\n");
+    oled_show_string(0, 2, "Scanning...");
+    oled_refresh();
 
     /* 进入播放主循环（不返回） */
     music_player_run();

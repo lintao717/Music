@@ -1,72 +1,48 @@
 #include "./BSP/OLED/oled.h"
+#include "./BSP/IIC/myiic.h"
 #include "./SYSTEM/delay/delay.h"
 #include "string.h"
 
-#define OLED_TIMEOUT_MS  100
-
-static I2C_HandleTypeDef hi2c1;
 static uint8_t oled_buffer[OLED_WIDTH * (OLED_HEIGHT / 8)];
 static uint8_t oled_font_ready = 0;
 
+/* 发送一个命令字节到 OLED（使用软件 I2C / myiic） */
 static void oled_write_cmd(uint8_t cmd)
 {
-    uint8_t data[2];
-    data[0] = 0x00;   /* Co = 0, D/C# = 0 */
-    data[1] = cmd;
-    HAL_I2C_Master_Transmit(&hi2c1, (OLED_I2C_ADDR << 1), data, 2, OLED_TIMEOUT_MS);
+    iic_start();
+    iic_send_byte(OLED_I2C_ADDR << 1);   /* 0x78 = 写地址 */
+    iic_wait_ack();
+    iic_send_byte(0x00);                  /* Co=0, D/C#=0 → 命令 */
+    iic_wait_ack();
+    iic_send_byte(cmd);
+    iic_wait_ack();
+    iic_stop();
 }
 
+/* 发送一行显示数据到 OLED（使用软件 I2C / myiic） */
 static void oled_write_data(uint8_t *buf, uint16_t len)
 {
-    /* I2C data stream starts with control byte 0x40 */
-    uint8_t tx[1 + OLED_WIDTH];
+    uint16_t i;
     if (len > OLED_WIDTH)
     {
         len = OLED_WIDTH;
     }
-    tx[0] = 0x40;
-    for (uint16_t i = 0; i < len; i++)
+    iic_start();
+    iic_send_byte(OLED_I2C_ADDR << 1);   /* 0x78 = 写地址 */
+    iic_wait_ack();
+    iic_send_byte(0x40);                  /* Co=0, D/C#=1 → 数据 */
+    iic_wait_ack();
+    for (i = 0; i < len; i++)
     {
-        tx[1 + i] = buf[i];
+        iic_send_byte(buf[i]);
+        iic_wait_ack();
     }
-    HAL_I2C_Master_Transmit(&hi2c1, (OLED_I2C_ADDR << 1), tx, (uint16_t)(len + 1), OLED_TIMEOUT_MS);
-}
-
-static void oled_i2c_init(void)
-{
-    hi2c1.Instance = I2C1;
-    hi2c1.Init.ClockSpeed = 400000;
-    hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-    hi2c1.Init.OwnAddress1 = 0;
-    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    hi2c1.Init.OwnAddress2 = 0;
-    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-    HAL_I2C_Init(&hi2c1);
-}
-
-void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
-{
-    GPIO_InitTypeDef gpio_init_struct;
-
-    if (hi2c->Instance == I2C1)
-    {
-        __HAL_RCC_I2C1_CLK_ENABLE();
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-
-        gpio_init_struct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-        gpio_init_struct.Mode = GPIO_MODE_AF_OD;
-        gpio_init_struct.Pull = GPIO_PULLUP;
-        gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        gpio_init_struct.Alternate = GPIO_AF4_I2C1;
-        HAL_GPIO_Init(GPIOB, &gpio_init_struct);
-    }
+    iic_stop();
 }
 
 void oled_init(void)
 {
-    oled_i2c_init();
+    iic_init();   /* 配置 PB6/PB7 为软件 I2C GPIO，与 AT24C02 共用同一总线 */
     delay_ms(100);
 
     oled_write_cmd(0xAE); /* Display OFF */

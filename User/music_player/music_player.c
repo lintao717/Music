@@ -18,6 +18,7 @@
 #include "./BSP/ATK_MO1053/atk_mo1053.h"
 #include "./BSP/ATK_MO1053/patch_flac.h"
 #include "./BSP/24CXX/24cxx.h"
+#include "./BSP/OLED/oled.h"
 #include "./BSP/KEY/key.h"
 #include "./BSP/LED/led.h"
 #include "./FATFS/exfuns/exfuns.h"
@@ -43,6 +44,9 @@ static uint32_t g_resume_offset = 0;        /* 上次断点位置（仅第一首
 
 static uint8_t mp_handle_key(void);
 static uint8_t bp_calc_checksum(const Breakpoint_t *bp);
+static void mp_oled_show_filename(const char *name);
+static void mp_oled_show_state(void);
+static void mp_oled_show_progress(uint16_t cur_sec, uint16_t total_sec);
 
 /******************************************************************************************/
 
@@ -176,7 +180,7 @@ uint8_t music_play_song(const char *pname)
                     goto play_done;
                 }
 
-                /* 每秒打印一次进度 */
+                /* 每秒更新一次进度 */
                 {
                     uint32_t cur = atk_mo1053_get_decode_time();
                     if (cur != playtime_last)
@@ -186,6 +190,7 @@ uint8_t music_play_song(const char *pname)
                         uint16_t bitrate = atk_mo1053_get_bitrate();
                         if (bitrate)
                             total_sec = (uint16_t)((g_music_player.file_size / bitrate) / 125);
+                        mp_oled_show_progress((uint16_t)cur, total_sec);
                         printf("[MP] %02lu:%02lu / %02u:%02u  %ukbps\r\n",
                                cur / 60, cur % 60,
                                total_sec / 60, total_sec % 60,
@@ -379,6 +384,10 @@ void music_player_run(void)
         g_play_file_index  = g_music_player.index;
         g_play_byte_offset = 0;
 
+        /* OLED 显示曲目信息 */
+        mp_oled_show_filename(finfo->fname);
+        mp_oled_show_state();
+
         printf("[MP] [%d/%d] %s\r\n",
                g_music_player.index + 1,
                g_music_player.total,
@@ -415,6 +424,41 @@ void music_player_run(void)
 
         delay_ms(100);
     }
+}
+
+/******************************************************************************************/
+/* OLED 显示辅助函数 */
+
+static void mp_oled_show_filename(const char *name)
+{
+    char buf[22];
+    oled_clear();
+    oled_show_string(0, 0, ">> MP3 Player <<");
+    strncpy(buf, name, 21);
+    buf[21] = '\0';
+    oled_show_string(0, 2, buf);
+    oled_refresh();
+}
+
+static void mp_oled_show_state(void)
+{
+    char buf[22];
+    snprintf(buf, sizeof(buf), "%d/%d Vol:%d",
+             g_music_player.index + 1,
+             g_music_player.total,
+             g_music_player.volume);
+    oled_show_string(0, 4, buf);
+    oled_refresh();
+}
+
+static void mp_oled_show_progress(uint16_t cur_sec, uint16_t total_sec)
+{
+    char buf[22];
+    snprintf(buf, sizeof(buf), "%02u:%02u / %02u:%02u",
+             cur_sec / 60, cur_sec % 60,
+             total_sec / 60, total_sec % 60);
+    oled_show_string(0, 6, buf);
+    oled_refresh();
 }
 
 /******************************************************************************************/
