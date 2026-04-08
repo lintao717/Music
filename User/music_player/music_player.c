@@ -107,6 +107,7 @@ uint8_t music_play_song(const char *pname)
     uint8_t  key;
     uint32_t playtime_last = 0;
     uint32_t chunk_start   = 0;   /* 记录本次 f_read 前的文件指针，即 4KB 块起始位置 */
+    uint32_t dreq_low_cnt  = 0;   /* 统计DREQ低电平次数，用于调试 */
 
     action = MP_ACTION_NONE;
 
@@ -163,6 +164,14 @@ uint8_t music_play_song(const char *pname)
         g_play_byte_offset = chunk_start;   /* 同步到 volatile 全局变量，PVD 中断可读 */
         res = f_read(fp, buf, MUSIC_READ_BUF_SIZE, &br);
 
+        /* ---- 外层按键轮询：每读一块就检查，不依赖DREQ状态 ---- */
+        key = mp_handle_key();
+        if (key != MP_ACTION_NONE)
+        {
+            action = key;
+            goto play_done;
+        }
+
         i = 0;
         while (i < br)
         {
@@ -172,7 +181,13 @@ uint8_t music_play_song(const char *pname)
             }
             else
             {
-                /* VS1053 数据缓冲区暂满，处理按键和显示 */
+                /* VS1053 数据缓冲区暂满（DREQ=LOW） */
+                dreq_low_cnt++;
+                if (dreq_low_cnt == 1)
+                {
+                    printf("[DBG] DREQ went LOW (DREQ is working)\r\n");
+                }
+
                 key = mp_handle_key();
                 if (key != MP_ACTION_NONE)
                 {
