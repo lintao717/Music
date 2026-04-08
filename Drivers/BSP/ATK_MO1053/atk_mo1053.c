@@ -92,8 +92,10 @@ uint8_t atk_mo1053_init(void)
 void atk_mo1053_soft_reset(void)
 {
     uint8_t retry = 0;
+    uint32_t timeout;
 
-    while (VS10XX_DQ == 0);                             /* 等待软件复位结束 */
+    timeout = 0;
+    while (VS10XX_DQ == 0 && timeout < 100000) { timeout++; }  /* 等待软件复位结束 */
     
     atk_mo1053_spi_read_write_byte(0Xff);               /* 启动传输 */
     retry = 0;  
@@ -109,8 +111,8 @@ void atk_mo1053_soft_reset(void)
         }
     }
 
-    while (VS10XX_DQ == 0)
-        ;                                               /* 等待软件复位结束 */
+    timeout = 0;
+    while (VS10XX_DQ == 0 && timeout < 100000) { timeout++; }  /* 等待软件复位结束 */
 
     retry = 0;
 
@@ -266,7 +268,8 @@ uint16_t atk_mo1053_ram_test(void)
  */
 void atk_mo1053_write_cmd(uint8_t address, uint16_t data)
 {
-    while (VS10XX_DQ == 0);                           /* 等待空闲 */
+    uint32_t t = 0;
+    while (VS10XX_DQ == 0 && t < 100000) { t++; }   /* 等待空闲 */
 
     atk_mo1053_spi_speed_low();                       /* 低速 */
     VS10XX_XDCS(1);
@@ -287,8 +290,8 @@ void atk_mo1053_write_cmd(uint8_t address, uint16_t data)
 uint16_t atk_mo1053_read_reg(uint8_t address)
 {
     uint16_t temp = 0;
-
-    while (VS10XX_DQ == 0);                          /* 非等待空闲状态 */
+    uint32_t t = 0;
+    while (VS10XX_DQ == 0 && t < 100000) { t++; }   /* 非等待空闲状态 */
 
     atk_mo1053_spi_speed_low();                      /* 低速 */
     VS10XX_XDCS(1);

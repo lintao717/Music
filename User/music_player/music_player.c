@@ -299,6 +299,8 @@ uint8_t music_player_init(void)
     }
 
     atk_mo1053_reset();
+    delay_ms(50);   /* 给 VS1053 额外时间确保dreq */
+    printf("[MP] VS1053 DQ after reset = %d\r\n", (int)VS10XX_DQ);
     atk_mo1053_soft_reset();
 
     /* 默认音量 */
