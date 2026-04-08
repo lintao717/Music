@@ -573,15 +573,15 @@ static uint8_t mp_handle_key(void)
 
     switch (key)
     {
-        case KEY0_PRES:     /* 下一曲 */
-            return MP_ACTION_NEXT;
-
-        case KEY1_PRES:     /* 上一曲 */
+        case KEY0_PRES:     /* PF1 → 上一曲 */
             return MP_ACTION_PREV;
 
-        case KEY2_PRES:     /* 音量+ */
+        case KEY1_PRES:     /* PF2 → 音量+ */
             music_volume_up();
             return MP_ACTION_NONE;
+
+        case KEY2_PRES:     /* PF3 → 下一曲 */
+            return MP_ACTION_NEXT;
 
         default:
             return MP_ACTION_NONE;
