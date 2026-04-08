@@ -7,17 +7,17 @@
 /******************************************************************************************/
 /* VS10XX RST/XCS/XDCS/DQ 引脚 定义 */
 
-#define VS10XX_RST_GPIO_PORT            GPIOC
-#define VS10XX_RST_GPIO_PIN             GPIO_PIN_0
-#define VS10XX_RST_GPIO_CLK_ENABLE()    do{ __HAL_RCC_GPIOC_CLK_ENABLE(); }while(0)   /* PE口时钟使能 */
+#define VS10XX_RST_GPIO_PORT            GPIOB
+#define VS10XX_RST_GPIO_PIN             GPIO_PIN_2
+#define VS10XX_RST_GPIO_CLK_ENABLE()    do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)   /* PB口时钟使能 */
 
 #define VS10XX_XCS_GPIO_PORT            GPIOB
-#define VS10XX_XCS_GPIO_PIN             GPIO_PIN_10
-#define VS10XX_XCS_GPIO_CLK_ENABLE()    do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)   /* PF口时钟使能 */
+#define VS10XX_XCS_GPIO_PIN             GPIO_PIN_1
+#define VS10XX_XCS_GPIO_CLK_ENABLE()    do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)   /* PB口时钟使能 */
 
 #define VS10XX_XDCS_GPIO_PORT           GPIOB
-#define VS10XX_XDCS_GPIO_PIN            GPIO_PIN_11
-#define VS10XX_XDCS_GPIO_CLK_ENABLE()   do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)   /* PF口时钟使能 */
+#define VS10XX_XDCS_GPIO_PIN            GPIO_PIN_0
+#define VS10XX_XDCS_GPIO_CLK_ENABLE()   do{ __HAL_RCC_GPIOB_CLK_ENABLE(); }while(0)   /* PB口时钟使能 */
 
 #define VS10XX_DQ_GPIO_PORT             GPIOF
 #define VS10XX_DQ_GPIO_PIN              GPIO_PIN_11
